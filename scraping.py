@@ -1,12 +1,13 @@
 from bs4 import BeautifulSoup
 from urllib.request import urlopen
+from urllib.error import URLError, HTTPError
 
 try:
-    html = urlopen("http://pythonscraping.comi/blog/second-edition-changes")
+    html = urlopen("http://pythonscraping.com/blog/second-edition-changes")
     bsObj = BeautifulSoup(html, "html.parser")
 
-    print(bsObj.h1)
-    print(bsObj.h2)
+    print(bsObj.h1.text)
+    print(bsObj.h2.text)
 except HTTPError as e:
     print (e)
 except URLError as e:

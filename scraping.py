@@ -6,7 +6,9 @@ try:
     html = urlopen("https://weather.yahoo.co.jp/weather")
     bsObj = BeautifulSoup(html, "html.parser")
 
-    print(bsObj.html)
+    print("[h1] " + bsObj.h1.text)
+    print("[h2] " + bsObj.h2.text)
+    # print(bsObj.html)
 except HTTPError as e:
     print (e)
 except URLError as e:

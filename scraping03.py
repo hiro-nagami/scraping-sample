@@ -25,7 +25,7 @@ for p in points:
     # 地名
     name = p.find(class_="name").string
     # 天気
-    weather = p.find(class_="forecast").span.string
+    weather = p.find(class_="forecast").find('img')['alt']
     # 最高気温
     high = p.find(class_="temp").find(class_="high").string
     # 最低気温

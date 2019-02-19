@@ -19,28 +19,42 @@ def getHtml(url):
     session = requests.Session()
     return session.get(url, headers=headers)
 
-def findForecastMap(response):
+def getRelatedLinks(baseUrl):
+    l = [baseUrl]
     try:
-        bsObj = BeautifulSoup(response.text, "html.parser")
-        return bsObj.find('div', id="forecastMap")
-    except:
-        print("cannot find forecastMap")
-        pass
-
-def getRelatedLinks(response):
-    try:
+        response = getHtml(baseUrl)
         bsObj = BeautifulSoup(response.text, "html.parser")
         cal = bsObj.find('ul', id="navCal")
         days = cal.find_all('li')
 
         for day in days:
-            print(day.em.string)
-
             link = day.a
             # if link:
-            print(urljoin("", link.get("href")))
-    except:
-        print("cannot find navCal")
+            if link is not None:
+                url = urljoin(baseUrl, link.get("href"))
+                l.append(url)
+        return l
+    except TypeError as e:
+        print('catch TypeError:', e)
+        pass
+
+def printDay(response):
+    try:
+        bsObj = BeautifulSoup(response.text, "html.parser")
+        cal = bsObj.find('ul', id="navCal")
+        day = cal.find('span', class_="current")
+        print()
+        print(day.text)
+    except TypeError as e:
+        print('catch TypeError:', e)
+        pass
+
+def findForecastMap(response):
+    try:
+        bsObj = BeautifulSoup(response.text, "html.parser")
+        return bsObj.find('div', id="forecastMap")
+    except TypeError as e:
+        print('catch TypeError:', e)
         pass
 
 def getWeathersFromForecastMap(map):
@@ -51,27 +65,30 @@ def getWeathersFromForecastMap(map):
         for p in points:
             try:
                 name = p.find(class_="name").string
-                weather = p.find(class_="forecast").span.string
+                weather = p.find(class_="forecast").find('img')['alt']
                 high = p.find(class_="temp").find(class_="high").string
                 low = p.find(class_="temp").find(class_="low").string
                 precip = p.find(class_="precip").string
 
                 weathers.append(DayWeather(name, weather, high, low, precip))
             
-            except:
-                print("cannot find weather")
+            except TypeError as e:
+                print('catch TypeError:', e)
                 pass
         return weathers
-    except:
-        print("cannot find point")
+    except TypeError as e:
+        print('catch TypeError:', e)
         pass
 
 url = "https://weather.yahoo.co.jp/weather"
-response = getHtml(url)
-getRelatedLinks(response)
-forecastMap = findForecastMap(response)
-weathers = getWeathersFromForecastMap(forecastMap)
+relatedLinks = getRelatedLinks(url)
 
-for w in weathers:
-    print(w.name, w.weather, w.high, "/", w.low, w.precip)
+for link in relatedLinks:
+    response = getHtml(link)
+    printDay(response)
+    forecastMap = findForecastMap(response)
+    weathers = getWeathersFromForecastMap(forecastMap)
+
+    for w in weathers:
+        print(w.name, w.weather, w.high, "/", w.low, w.precip)
 
